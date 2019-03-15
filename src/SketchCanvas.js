@@ -33,7 +33,7 @@ class SketchCanvas extends React.Component {
     onStrokeEnd: PropTypes.func,
     onSketchSaved: PropTypes.func,
     user: PropTypes.string,
-
+    panResponder: PropTypes.object,
     touchEnabled: PropTypes.bool,
 
     text: PropTypes.arrayOf(PropTypes.shape({
@@ -64,7 +64,7 @@ class SketchCanvas extends React.Component {
     onStrokeEnd: () => { },
     onSketchSaved: () => { },
     user: null,
-
+    panResponder: null,
     touchEnabled: true,
 
     text: null,
@@ -152,6 +152,42 @@ class SketchCanvas extends React.Component {
     }
   }
 
+  newPath() {
+    this._path = {
+      id: parseInt(Math.random() * 100000000), color: this.props.strokeColor,
+      width: this.props.strokeWidth, data: []
+    }
+  
+    UIManager.dispatchViewManagerCommand(
+      this._handle,
+      UIManager.RNSketchCanvas.Commands.newPath,
+      [
+        this._path.id,
+        processColor(this._path.color),
+        this._path.width * this._screenScale
+      ]
+    )
+  }
+
+  addPoint(x, y) {
+    if (this._path) {
+      x = parseFloat(x.toFixed(2) * this._screenScale);
+      y = parseFloat(y.toFixed(2) * this._screenScale);
+
+      UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.addPoint, [x, y]);
+      this._path.data.push(`${x},${y}`)
+    }
+  }
+
+  endPath() {
+    if (this._path) {
+      // Note onStrokeStart and onStrokeChange are not called. 
+      this.props.onStrokeEnd({ path: this._path, size: this._size, drawer: this.props.user })
+      this._paths.push({ path: this._path, size: this._size, drawer: this.props.user })
+    }
+    UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.endPath, [])
+  }
+
   componentWillMount() {
     this.panResponder = PanResponder.create({
       // Ask to be the responder:
@@ -225,6 +261,11 @@ class SketchCanvas extends React.Component {
   }
 
   render() {
+    let panHandlers = {};
+    if (this.props.touchEnabled) {
+      panHandlers = this.props.panResponder? this.props.panResponder.panHandlers : this.panResponder.panHandlers;
+    }
+
     return (
       <RNSketchCanvas
         ref={ref => {
@@ -236,7 +277,7 @@ class SketchCanvas extends React.Component {
           this._initialized = true
           this._pathsToProcess.length > 0 && this._pathsToProcess.forEach(p => this.addPath(p))
         }}
-        {...this.panResponder.panHandlers}
+        {...panHandlers}
         onChange={(e) => {
           if (e.nativeEvent.hasOwnProperty('pathsUpdate')) {
             this.props.onPathsChange(e.nativeEvent.pathsUpdate)

@@ -69,6 +69,7 @@ export interface SketchCanvasProps {
   text?: CanvasText[]
   localSourceImage?: LocalSourceImage
   touchEnabled?: boolean
+  panResponder?: any
 
   /**
    * Android Only: Provide a Dialog Title for the Image Saving PermissionDialog. Defaults to empty string if not set
