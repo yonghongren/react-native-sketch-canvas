@@ -258,6 +258,12 @@ class SketchCanvas extends React.Component {
       this.props.permissionDialogTitle,
       this.props.permissionDialogMessage,
     );
+    if (this.props.objects && this.props.objects.paths) {
+      console.log('add initial paths in did mount ', this.props.objects.paths);
+      this.props.objects.paths.forEach(p => {
+        this.addPath(p);
+      })
+    }
   }
 
   render() {
