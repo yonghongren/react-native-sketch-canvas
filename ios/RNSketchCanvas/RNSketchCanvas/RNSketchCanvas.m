@@ -39,6 +39,18 @@
     return self;
 }
 
+- (void)dealloc {
+    CGContextRelease(_drawingContext);
+    _drawingContext = nil;
+    CGImageRelease(_frozenImage);
+    _frozenImage = nil;
+
+    CGContextRelease(_translucentDrawingContext);
+    _translucentDrawingContext = nil;
+    CGImageRelease(_translucentFrozenImage);
+    _translucentFrozenImage = nil;
+}
+
 - (void)drawRect:(CGRect)rect {
     CGContextRef context = UIGraphicsGetCurrentContext();
 
@@ -93,6 +105,8 @@
         _lastSize = self.bounds.size;
         CGContextRelease(_drawingContext);
         _drawingContext = nil;
+        CGContextRelease(_translucentDrawingContext);
+        _translucentDrawingContext = nil;
         [self createDrawingContext];
         _needsFullRedraw = YES;
         _backgroundImageScaled = nil;
