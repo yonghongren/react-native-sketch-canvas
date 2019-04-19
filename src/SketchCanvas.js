@@ -90,12 +90,25 @@ class SketchCanvas extends React.Component {
     this._initialized = false
 
     this.state.text = this._processText(props.text ? props.text.map(t => Object.assign({}, t)) : null)
+
+    if (props.objects && props.objects.paths) {
+      console.log('add paths in constructor')
+      props.objects.paths.forEach(p => {
+        this.addPath(p);
+      })
+    }
   }
 
   componentWillReceiveProps(nextProps) {
     this.setState({
       text: this._processText(nextProps.text ? nextProps.text.map(t => Object.assign({}, t)) : null)
     })
+    if (nextProps.objects && nextProps.objects.paths) {
+      console.log('add paths in WillReceiveProps')
+      nextProps.objects.paths.forEach(p => {
+        this.addPath(p);
+      })
+    }
   }
 
   _processText(text) {
@@ -171,10 +184,11 @@ class SketchCanvas extends React.Component {
 
   addPoint(x, y) {
     if (this._path) {
-      x = parseFloat(x.toFixed(2) * this._screenScale);
-      y = parseFloat(y.toFixed(2) * this._screenScale);
+      // scale for actual graphics rendering, but data points are stored without scaling.
+      let sx = parseFloat(x.toFixed(2) * this._screenScale);
+      let sy = parseFloat(y.toFixed(2) * this._screenScale);
 
-      UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.addPoint, [x, y]);
+      UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.addPoint, [sx, sy]);
       this._path.data.push(`${x},${y}`)
     }
   }
@@ -258,8 +272,9 @@ class SketchCanvas extends React.Component {
       this.props.permissionDialogTitle,
       this.props.permissionDialogMessage,
     );
+
+    // attempt to get initial drawing to show on start, but this doesn't help.
     if (this.props.objects && this.props.objects.paths) {
-      console.log('add initial paths in did mount ', this.props.objects.paths);
       this.props.objects.paths.forEach(p => {
         this.addPath(p);
       })

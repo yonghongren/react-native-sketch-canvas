@@ -214,6 +214,7 @@ public class SketchCanvas extends View {
                 break;
             }
         }
+        Log.i("SketchCanvas", "addPath: " + exist);
 
         if (!exist) {
             SketchData newPath = new SketchData(id, strokeColor, strokeWidth, points);
